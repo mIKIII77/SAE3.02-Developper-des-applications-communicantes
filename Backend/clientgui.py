@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         grid = QGridLayout()
         widget.setLayout(grid)
         self.setWindowTitle("SuperVision")
-        self.setGeometry(100, 100, 700, 700)
+        self.setGeometry(100, 100, 1200, 1200)
 
         #Items
         self.connect = QPushButton("Add new server")
@@ -39,9 +39,12 @@ class MainWindow(QMainWindow):
         self.presavebuttontypeos = QPushButton("Type OS")
         self.presavebuttonram = QPushButton("RAM Info")
         self.presavebuttonhostname = QPushButton("Hostname")
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.disconnect = QPushButton("Disconnect")
 
         #Layout
         grid.addWidget(self.text, 0, 0)
+        grid.addWidget(self.disconnect, 0,2)
         grid.addWidget(self.listservers, 1, 0 , 1, 3)
         grid.addWidget(self.inputip, 2, 0)
         grid.addWidget(self.inputport, 2, 1)
@@ -60,6 +63,7 @@ class MainWindow(QMainWindow):
         self.presavebuttontypeos.clicked.connect(self.__typeos)
         self.presavebuttonram.clicked.connect(self.__raminfo)
         self.presavebuttonhostname.clicked.connect(self.__hostname)
+        self.disconnect.clicked.connect(self.__disconnect)
 
 
         
@@ -68,7 +72,7 @@ class MainWindow(QMainWindow):
         
         
         #Functions
-    def __connect(self):
+    def __connect(self, client):
         if self.inputip.text() == "" or self.inputport.text() == "":
             QMessageBox.warning(self, "Error", "Please enter IP address and port")
         #else add to list ip:port
@@ -80,47 +84,56 @@ class MainWindow(QMainWindow):
 
 
 
-    def __chose_server(self):
-        global client
+    def __chose_server(self, client):
         if self.listservers.currentItem() == None:
             QMessageBox.warning(self, "Error", "Please select a server")
         else:
             try:
-                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 ip = self.listservers.currentItem().text().split(":")[0]
                 port = int(self.listservers.currentItem().text().split(":")[1])
-                client.connect((ip, port))
+                self.client.connect((ip, port))
                 QMessageBox.information(self, "Success", "Connected to server")
-                threading.Thread(target=self.__receive_data, args=[client]).start()
-                return activeconnection == True
+                threadreceiv = threading.Thread(target=self.__receive_data, args=(client,))
+                threadreceiv.start()
+                return self.client 
             except:
                 QMessageBox.warning(self, "Error", "Connection failed")
-                return client
+
+    def __disconnect(self):
+        if self.listservers.currentItem() == None:
+            QMessageBox.warning(self, "Error", "Please select a server")
+        else:
+            self.client.send("close".encode('utf-8'))
+            self.client.close()
+            QMessageBox.information(self, "Success", "Disconnected from server")
+
 
 
     def __receive_data(self, client):
-        while True:
-            data = client.recv(1024).decode('utf-8')
-            #Write data to QPlainTextEdit at new line
-            self.serverreply.appendPlainText(data)
-            #write
-            if data == "close":
-                client.close()
-                break
+        flag = True
+        while flag == True:
+            try:
+                data = self.client.recv(1024)
+                self.serverreply.appendPlainText(data.decode('utf-8'))
+                # Refresh the QPlainTextEdit
+                self.serverreply.repaint()
+                self.serverreply.render(painter)
+            except:
+                pass
       
 
     def __send_data(self, client):
         if self.inputcommand.text() == "":
             QMessageBox.warning(self, "Error", "Please enter a command")
-        elif activeconnection == False:
+        elif self.listservers.currentItem() == None:
             QMessageBox.warning(self, "Error", "Please select a server")
         else:
-            client.send(self.inputcommand.text().encode('utf-8'))
+            self.client.send(self.inputcommand.text().encode('utf-8'))
             self.inputcommand.setText("")
 
     def __typeos(self):
         self.inputcommand.setText("os")
-        self.__send_data()
+        self.__send_data(client)
 
     def __raminfo(self):   
         self.inputcommand.setText("ram")
@@ -132,12 +145,11 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    global activeconnection
-    activeconnection = False
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+   
   
 
 if __name__ == '__main__':
