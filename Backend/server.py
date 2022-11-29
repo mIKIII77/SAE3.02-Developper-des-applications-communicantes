@@ -1,10 +1,11 @@
 import socket
 import threading
 import platform
+import psutil
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('localhost', 10023))
+server.bind(('localhost', 10032))
 server.listen(5)
 os = platform.system()
 
@@ -24,12 +25,33 @@ def receive_data(client):
             data = client.recv(1024).decode('utf-8')
             print(data)
             if data == 'os':
-                client.send(os.encode('utf-8'))
-                print('Sent OS')
+                osfull = platform.platform()
+                client.send(osfull.encode('utf-8'))
             elif data == 'close':
                 client.close()
                 print('Client disconnected')
                 break
+            elif data == 'ram':
+                ram = round(psutil.virtual_memory().total / (1024.0 **3))
+                ramused = round(psutil.virtual_memory().used / (1024.0 **3))
+                ramfree = round(psutil.virtual_memory().free / (1024.0 **3))
+                client.send(str(f"RAM T: {ram} GB, RAM U: {ramused} GB, RAM F: {ramfree} GB").encode('utf-8'))
+            elif data == 'hostname':
+                hostname = platform.node()
+                client.send(f"HOSTNAME:{hostname}".encode('utf-8'))
+            elif data == 'ip':
+                ip = socket.gethostbyname(socket.gethostname())
+                client.send(f"PUBLIC IP:{ip}".encode('utf-8'))
+            # si data commence par Linux:
+            elif data.startswith('Linux:'):
+                try: 
+                    os.system(data[6:])
+                    client.send('Command executed'.encode('utf-8'))
+                except:
+                    client.send('Command failed'.encode('utf-8'))
+                    
+            
+
 
 def send_data(client):
     while True:

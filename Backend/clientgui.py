@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         self.text = QLabel("Les serveurs enrégistrés :")
         
         # Readonly QPlainTextEdit for the logs
-        self.serverreply = QPlainTextEdit()
+        self.serverreply = QTextBrowser()
         self.serverreply.setReadOnly(True)
         #readonly
 
@@ -41,6 +41,9 @@ class MainWindow(QMainWindow):
         self.presavebuttonhostname = QPushButton("Hostname")
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.disconnect = QPushButton("Disconnect")
+        self.buttonconnect = QPushButton("Connect")
+        self.threadreceiv = threading.Thread(target=self.__receive_data, args=(client,))
+
 
         #Layout
         grid.addWidget(self.text, 0, 0)
@@ -64,23 +67,22 @@ class MainWindow(QMainWindow):
         self.presavebuttonram.clicked.connect(self.__raminfo)
         self.presavebuttonhostname.clicked.connect(self.__hostname)
         self.disconnect.clicked.connect(self.__disconnect)
-
-
-        
-        
-
-        
-        
+                
         #Functions
+
     def __connect(self, client):
         if self.inputip.text() == "" or self.inputport.text() == "":
             QMessageBox.warning(self, "Error", "Please enter IP address and port")
         #else add to list ip:port
         else:
             self.listservers.addItem(self.inputip.text() + ":" + self.inputport.text())
+            servercsv = open("servers.csv", "a")
+            servercsv.write(self.inputip.text() + ":" + self.inputport.text() + "\n")
+            servercsv.close()
             self.inputip.setText("")
             self.inputport.setText("")
-
+            #Add client to csv file 
+            
 
 
 
@@ -93,8 +95,7 @@ class MainWindow(QMainWindow):
                 port = int(self.listservers.currentItem().text().split(":")[1])
                 self.client.connect((ip, port))
                 QMessageBox.information(self, "Success", "Connected to server")
-                threadreceiv = threading.Thread(target=self.__receive_data, args=(client,))
-                threadreceiv.start()
+                self.threadreceiv.start()
                 return self.client 
             except:
                 QMessageBox.warning(self, "Error", "Connection failed")
@@ -102,28 +103,30 @@ class MainWindow(QMainWindow):
     def __disconnect(self):
         if self.listservers.currentItem() == None:
             QMessageBox.warning(self, "Error", "Please select a server")
-        else:
+        try:
             self.client.send("close".encode('utf-8'))
             self.client.close()
             QMessageBox.information(self, "Success", "Disconnected from server")
-
-
+            self.serverreply.clear()
+        except:
+            QMessageBox.warning(self, "Error", "Disconnection failed")
 
     def __receive_data(self, client):
         flag = True
         while flag == True:
             try:
                 data = self.client.recv(1024)
-                self.serverreply.appendPlainText(data.decode('utf-8'))
+                self.serverreply.append(data.decode('utf-8'))
                 # Refresh the QPlainTextEdit
-                self.serverreply.repaint()
-                self.serverreply.render(painter)
+                self.serverreply.update()
             except:
                 pass
       
-
     def __send_data(self, client):
-        if self.inputcommand.text() == "":
+        if self.inputcommand.text() == "clear":
+            self.serverreply.clear()
+            self.inputcommand.setText("")
+        elif self.inputcommand.text() == "":
             QMessageBox.warning(self, "Error", "Please enter a command")
         elif self.listservers.currentItem() == None:
             QMessageBox.warning(self, "Error", "Please select a server")
@@ -135,13 +138,13 @@ class MainWindow(QMainWindow):
         self.inputcommand.setText("os")
         self.__send_data(client)
 
-    def __raminfo(self):   
+    def __raminfo(self):
         self.inputcommand.setText("ram")
-        self.__send_data()
-
+        self.__send_data(client)
+        
     def __hostname(self):
         self.inputcommand.setText("hostname")
-        self.__send_data()
+        self.__send_data(client)
 
 
 def main():
