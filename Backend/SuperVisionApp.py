@@ -6,9 +6,15 @@ import threading
 import socket
 import platform
 import multiprocessing
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+import psutil
+import os   
+=======
+>>>>>>> main:Backend/clientgui.py
 
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 #Import backend files with path: Backend/
-import client as client
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,7 +24,12 @@ class MainWindow(QMainWindow):
         grid = QGridLayout()
         widget.setLayout(grid)
         self.setWindowTitle("SuperVision")
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+        self.setWindowIcon(QIcon("Assets/guiicon.png"))
+        self.setGeometry(100, 100, 700, 700)
+=======
         self.setGeometry(100, 100, 1200, 1200)
+>>>>>>> main:Backend/clientgui.py
 
         #Items
         self.connect = QPushButton("Add new server")
@@ -80,6 +91,10 @@ class MainWindow(QMainWindow):
         self.delete.clicked.connect(self.__delete_server)
         # When enter is pressed, send the command
         self.inputcommand.returnPressed.connect(self.sendcommand.click)
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+        self.commandmode.stateChanged.connect(self.__commandmode)
+=======
+>>>>>>> main:Backend/clientgui.py
 
 
 
@@ -91,7 +106,11 @@ class MainWindow(QMainWindow):
         #else add to list ip:port
         else:
             self.listservers.addItem(self.inputip.text() + ":" + self.inputport.text())
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+            servercsv = open("ServersList/servers.csv", "a")
+=======
             servercsv = open("servers.csv", "a")
+>>>>>>> main:Backend/clientgui.py
             servercsv.write("\n" + self.inputip.text() + ":" + self.inputport.text())
             # servercsv.write(self.inputip.text() + ":" + self.inputport.text() + "\n")
             servercsv.close()
@@ -100,7 +119,11 @@ class MainWindow(QMainWindow):
             #Add client to csv file 
             
     def __appendlist_server(self, client):
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+        servercsv = open("ServersList/servers.csv", "r")
+=======
         servercsv = open("servers.csv", "r")
+>>>>>>> main:Backend/clientgui.py
         for line in servercsv:
             self.listservers.addItem(line)
         servercsv.close()
@@ -110,7 +133,11 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Please select a server")
         else:
             self.listservers.takeItem(self.listservers.currentRow())
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+            servercsv = open("ServersList/servers.csv", "w")
+=======
             servercsv = open("servers.csv", "w")
+>>>>>>> main:Backend/clientgui.py
             for i in range(self.listservers.count()):
                 servercsv.write(self.listservers.item(i).text() + "\n")
             servercsv.close()
@@ -150,8 +177,16 @@ class MainWindow(QMainWindow):
     def __send_data(self, client):
         if self.commandmode.isChecked():
             self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+            # Log entry here, TEST
+            # log = open(f"Logs/{self.client.getpeername()[0]}.log", "a")
+            # log.write(f"Linux:{self.inputcommand.text()}" + "\n")
+            self.inputcommand.setText("")
+        elif self.inputcommand.text() == "clear":
+=======
             self.inputcommand.setText("")
         if self.inputcommand.text() == "clear":
+>>>>>>> main:Backend/clientgui.py
             self.serverreply.clear()
             self.inputcommand.setText("")
         elif self.inputcommand.text() == "":
@@ -174,6 +209,18 @@ class MainWindow(QMainWindow):
         self.inputcommand.setText("hostname")
         self.__send_data(client)
 
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+    def __commandmode(self):
+        if self.commandmode.isChecked():
+            self.presavebuttonhostname.setEnabled(False)
+            self.presavebuttontypeos.setEnabled(False)
+            self.presavebuttonram.setEnabled(False)
+        else:
+            self.presavebuttonhostname.setEnabled(True)
+            self.presavebuttontypeos.setEnabled(True)
+            self.presavebuttonram.setEnabled(True)
+=======
+>>>>>>> main:Backend/clientgui.py
 
 class ThreadReceive(QThread):
     def __init__(self, client, serverreply):
@@ -194,6 +241,21 @@ class ThreadReceive(QThread):
                 # Refresh the QPlainTextEdit
                 self.serverreply.verticalScrollBar().setValue(self.serverreply.verticalScrollBar().maximum())
                 self.serverreply.update()
+<<<<<<< HEAD:Backend/SuperVisionApp.py
+                # Create a log file for each client
+                # Write the data received from the client to the log file
+                if os.path.exists(f"Logs/{self.client.getpeername()[0]}.log") == False:
+                    log = open(f"Logs/{self.client.getpeername()[0]}.log", "w")
+                    log.write(f"Begin log for {self.client.getpeername()[0]}")
+                    log.write("--------------------------------------")
+                    log.write(f"\n Client> {data.decode('utf-8')}")
+                    log.close()
+                else:
+                    log = open(f"Logs/{self.client.getpeername()[0]}.log", "a")
+                    log.write(f"\n Client> {data.decode('utf-8')}")
+                    log.close()
+=======
+>>>>>>> main:Backend/clientgui.py
             except:
                 pass
     
