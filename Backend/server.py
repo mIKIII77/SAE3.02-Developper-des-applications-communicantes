@@ -14,11 +14,15 @@ os = platform.system()
 def accept_clients():
     global client
     while True:
-        print('Waiting for connection...')
-        client, addr = server.accept()
-        print(f'Admin with, {addr} connected') 
-        client.send(f'Welcome to the server! You are connected to {os} machine.'.encode('utf-8'))
-        threading.Thread(target=receive_data, args=[client]).start()
+        try: 
+            print('Waiting for connection...')
+            client, addr = server.accept()
+            print(f'Admin with, {addr} connected') 
+            client.send(f'Welcome to the server! You are connected to {os} machine.'.encode('utf-8'))
+            threading.Thread(target=receive_data, args=[client]).start()
+        except Exception as e:
+            print(f'Error: {e}')
+            pass
 
 def receive_data(client):
     if os == 'Linux':
@@ -69,6 +73,7 @@ def receive_data(client):
                     # client.send(output)
                 except Exception as e:
                     client.send(f"Error returned by server: {e}".encode('utf-8'))         
+   
     elif os == 'Windows':
         while True:
             data = client.recv(1024).decode('utf-8')
@@ -134,10 +139,10 @@ def receive_data(client):
             elif data.startswith('MacOS:'):
                 pass
                          
-def send_data(client):
-    while True:
-        data = input('Enter command: ')
-        client.send(data.encode('utf-8'))
+# def send_data(client):
+#     while True:
+#         data = input('Enter command: ')
+#         client.send(data.encode('utf-8'))
 
 def main():
     threading.Thread(target=accept_clients, args=[]).start()
