@@ -4,14 +4,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import threading
 import socket
-import platform
-import multiprocessing
-import psutil
 import os   
 
 
+
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#Import backend files with path: Backend/
 
 
 class MainWindow(QMainWindow):
@@ -44,12 +41,13 @@ class MainWindow(QMainWindow):
         self.presavebuttontypeos = QPushButton("Type OS")
         self.presavebuttonram = QPushButton("RAM Info")
         self.presavebuttonhostname = QPushButton("Hostname")
-        # self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.disconnect = QPushButton("Disconnect")
         self.buttonconnect = QPushButton("Connect")
         self.delete = QPushButton("Delete")
         self.threadreceiv = None
         self.commandmode = QCheckBox(text="Command mode")
+        # Dropdown List of os for command mode
+        self.commandmodeos = QComboBox()
 
         # self.threadreceiv = threading.Thread(target=self.__receive_data, args=(self.client,))
         # self.exit_event = threading.Event()
@@ -66,7 +64,8 @@ class MainWindow(QMainWindow):
         grid.addWidget(self.serverreply, 3, 0, 1, 3)
         grid.addWidget(self.inputcommand, 4, 0, 1, 2)
         grid.addWidget(self.sendcommand, 4, 2, 1, 2)
-        grid.addWidget(self.commandmode, 6, 0, 1, 2)
+        grid.addWidget(self.commandmode, 6, 0)
+        grid.addWidget(self.commandmodeos, 6, 1)
         grid.addWidget(self.presavebuttontypeos, 5, 0)
         grid.addWidget(self.presavebuttonram, 5, 1)
         grid.addWidget(self.presavebuttonhostname, 5, 2, 1, 2)
@@ -74,6 +73,10 @@ class MainWindow(QMainWindow):
         #Events
         #Begin with list append with csv file
         self.__appendlist_server(client)
+        # Add items to the dropdown list
+        self.commandmodeos.addItem("Linux")
+        self.commandmodeos.addItem("Windows")
+        self.commandmodeos.addItem("MacOS")
         self.connect.clicked.connect(self.__connect)
         self.listservers.itemDoubleClicked.connect(self.__chose_server)
         self.sendcommand.clicked.connect(self.__send_data)
@@ -85,9 +88,8 @@ class MainWindow(QMainWindow):
         # When enter is pressed, send the command
         self.inputcommand.returnPressed.connect(self.sendcommand.click)
         self.commandmode.stateChanged.connect(self.__commandmode)
-
-
-
+        #When close window
+        self.closeEvent = self.__closeEvent
 
 
         #Functions
@@ -103,8 +105,8 @@ class MainWindow(QMainWindow):
             servercsv.close()
             self.inputip.setText("")
             self.inputport.setText("")
-            #Add client to csv file 
-            
+        #Add client to csv file 
+        
     def __appendlist_server(self, client):
         servercsv = open("ServersList/servers.csv", "r")
         for line in servercsv:
@@ -120,12 +122,19 @@ class MainWindow(QMainWindow):
             for i in range(self.listservers.count()):
                 servercsv.write(self.listservers.item(i).text() + "\n")
             servercsv.close()
-
         #Delete from csv file
 
     def __chose_server(self, client):
+        try:
+            # If the client is already connected, disconnect it
+            self.client.send("close".encode('utf-8'))
+            self.client.close()
+            self.threadreceiv.terminate()
+        except:
+            pass 
+
         if self.listservers.currentItem() == None:
-            QMessageBox.warning(self, "Error", "Please select a server")
+            QMessageBox.warning(self, "Error", "Please select a server") 
         else:
             try:
                 self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -135,7 +144,6 @@ class MainWindow(QMainWindow):
                 self.threadreceiv = ThreadReceive(self.client, self.serverreply)
                 self.threadreceiv.start()
                 QMessageBox.information(self, "Success", "Connected to server")
-                #Start ThreadReceive here
                 return self.client 
             except:
                 QMessageBox.warning(self, "Error", "Connection failed")
@@ -154,11 +162,14 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Disconnection failed")
 
     def __send_data(self, client):
-        if self.commandmode.isChecked():
+        if self.commandmode.isChecked() and self.commandmodeos.currentText() == "Linux":
             self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
-            # Log entry here, TEST
-            # log = open(f"Logs/{self.client.getpeername()[0]}.log", "a")
-            # log.write(f"Linux:{self.inputcommand.text()}" + "\n")
+            self.inputcommand.setText("")
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "Windows":
+            self.client.send(f"Windows:{self.inputcommand.text()}".encode('utf-8'))
+            self.inputcommand.setText("")
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "MacOS":
+            self.client.send(f"MacOS:{self.inputcommand.text()}".encode('utf-8'))
             self.inputcommand.setText("")
         elif self.inputcommand.text() == "clear":
             self.serverreply.clear()
@@ -193,6 +204,14 @@ class MainWindow(QMainWindow):
             self.presavebuttontypeos.setEnabled(True)
             self.presavebuttonram.setEnabled(True)
 
+    def __closeEvent(self, event):
+        try:
+            self.client.send("close".encode('utf-8'))
+            self.client.close()
+            self.threadreceiv.terminate()
+        except:
+            pass
+
 class ThreadReceive(QThread):
     def __init__(self, client, serverreply):
         super().__init__()
@@ -214,14 +233,16 @@ class ThreadReceive(QThread):
                 self.serverreply.update()
                 # Create a log file for each client
                 # Write the data received from the client to the log file
-                if os.path.exists(f"Logs/{self.client.getpeername()[0]}.log") == False:
-                    log = open(f"Logs/{self.client.getpeername()[0]}.log", "w")
-                    log.write(f"Begin log for {self.client.getpeername()[0]}")
-                    log.write("--------------------------------------")
-                    log.write(f"\n Client> {data.decode('utf-8')}")
+                if os.path.exists(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log") == False:
+                    log = open(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log", "w")
+                    log.write(f"Begin log for {self.client.getpeername()[0]}:{self.client.getpeername()[1]}")
+                    log.write(f"\n--------------------------------------")
+                    now = datetime.datetime.now()
+                    current_time = now.strftime("%H:%M:%S")
+                    log.write(f"\n{current_time}Client> {data.decode('utf-8')}")
                     log.close()
                 else:
-                    log = open(f"Logs/{self.client.getpeername()[0]}.log", "a")
+                    log = open(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log", "a")
                     log.write(f"\n Client> {data.decode('utf-8')}")
                     log.close()
             except:
@@ -237,9 +258,8 @@ def main():
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
-   
-  
-
+    # Event 
+    
 if __name__ == '__main__':
     main()
 

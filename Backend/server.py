@@ -6,7 +6,7 @@ import subprocess
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('0.0.0.0', 10051))
+server.bind(('0.0.0.0', 10055))
 server.listen(5)
 os = platform.system()
 
@@ -54,7 +54,18 @@ def receive_data(client):
                 cpu = psutil.cpu_percent()
                 # Send cpu name and 
                 client.send(f"CPU USAGE:{cpu}%".encode('utf-8'))
-            # If data starts with Linux:
+            # Reset the server
+            #
+            #
+            # 
+            # 
+            # elif data == 'kill':
+            #     client.close()
+            #     server.close()
+            #     print('Server closed')
+            #     threading.Thread(target=receive_data, args=[client]).terminate()
+            # Stop the loop
+            #  If data starts with Linux:
             elif data.startswith('Linux:'):
                 try:
                     command = data.split(':')[1]
@@ -72,7 +83,9 @@ def receive_data(client):
                     # client.send('Command received successfully'.encode('utf-8'))
                     # client.send(output)
                 except Exception as e:
-                    client.send(f"Error returned by server: {e}".encode('utf-8'))         
+                    client.send(f"Error returned by server: {e}".encode('utf-8'))  
+            else:
+                client.send('Command not recognized'.encode('utf-8'))       
    
     elif os == 'Windows':
         while True:
@@ -140,9 +153,7 @@ def receive_data(client):
                 pass
                          
 # def send_data(client):
-#     while True:
-#         data = input('Enter command: ')
-#         client.send(data.encode('utf-8'))
+
 
 def main():
     threading.Thread(target=accept_clients, args=[]).start()
