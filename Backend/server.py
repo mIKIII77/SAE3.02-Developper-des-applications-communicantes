@@ -10,10 +10,13 @@ server.bind(('0.0.0.0', 10055))
 server.listen(5)
 os = platform.system()
 
+# Event to stop the thread
+stop_thread = threading.Event()
+
 # Automatically accept the connection of many supervisors
 def accept_clients():
     global client
-    while True:
+    while True and not stop_thread.is_set():
         try: 
             print('Waiting for connection...')
             client, addr = server.accept()
@@ -38,6 +41,11 @@ def receive_data(client):
                 accept_clients()
                 print('Client disconnected')
                 break
+            elif data == 'kill':
+                client.close()
+                server.close()
+                stop_thread.set()
+                print('Server closed')
             elif data == 'ram':
                 ram = round(psutil.virtual_memory().total / (1024.0 **3))
                 ramused = round(psutil.virtual_memory().used / (1024.0 **3))
@@ -54,25 +62,13 @@ def receive_data(client):
                 cpu = psutil.cpu_percent()
                 # Send cpu name and 
                 client.send(f"CPU USAGE:{cpu}%".encode('utf-8'))
-            # Reset the server
-            #
-            #
-            # 
-            # 
-            # elif data == 'kill':
-            #     client.close()
-            #     server.close()
-            #     print('Server closed')
-            #     threading.Thread(target=receive_data, args=[client]).terminate()
-            # Stop the loop
-            #  If data starts with Linux:
             elif data.startswith('Linux:'):
                 try:
                     command = data.split(':')[1]
                     # Execute the command
                     output = subprocess.check_output(command, shell=True) 
                     # If output is superior to 1024 bytes
-                    if len(output) > 1024:
+                    if len(output) >= 1024:
                         # Split the output in 1024 bytes chunks
                         output = output.split(b'1024')
                         # Send the chunks
@@ -88,7 +84,7 @@ def receive_data(client):
                 client.send('Command not recognized'.encode('utf-8'))       
    
     elif os == 'Windows':
-        while True:
+        while True and not stop_thread.is_set():
             data = client.recv(1024).decode('utf-8')
             print(data)
             if data == 'os':
@@ -100,6 +96,11 @@ def receive_data(client):
                 accept_clients()
                 print('Client disconnected')
                 break
+            elif data == 'kill':
+                client.close()
+                server.close()
+                stop_thread.set()
+                print('Server closed')
             elif data == 'ram':
                 ram = round(psutil.virtual_memory().total / (1024.0 **3))
                 ramused = round(psutil.virtual_memory().used / (1024.0 **3))
@@ -118,7 +119,27 @@ def receive_data(client):
                 client.send(f"CPU USAGE:{cpu}%".encode('utf-8'))
             # If data starts with Linux:
             elif data.startswith('Windows:'):
-                pass
+                try:
+                    command = data.split(':')[1]
+                    # Execute the command
+                    output = subprocess.check_output(command, shell=True) 
+                    # If output is superior to 1024 bytes
+                    if len(output) >= 1024:
+                        # Split the output in 1024 bytes chunks
+                        output = output.split(b'1024')
+                        # Send the chunks
+                        for chunk in output:
+                            client.send(chunk)
+                    else:
+                        client.send(output)
+                    # client.send('Command received successfully'.encode('utf-8'))
+                    # client.send(output)
+                except Exception as e:
+                    client.send(f"Error returned by server: {e}".encode('utf-8'))  
+            else:
+                client.send('Command not recognized'.encode('utf-8')) 
+                
+
     elif os == 'Darwin':
         while True:
             data = client.recv(1024).decode('utf-8')
@@ -132,6 +153,11 @@ def receive_data(client):
                 accept_clients()
                 print('Client disconnected')
                 break
+            elif data == 'kill':
+                client.close()
+                server.close()
+                stop_thread.set()
+                print('Server closed')
             elif data == 'ram':
                 ram = round(psutil.virtual_memory().total / (1024.0 **3))
                 ramused = round(psutil.virtual_memory().used / (1024.0 **3))
@@ -150,10 +176,25 @@ def receive_data(client):
                 client.send(f"CPU USAGE:{cpu}%".encode('utf-8'))
             # If data starts with Linux:
             elif data.startswith('MacOS:'):
-                pass
-                         
-# def send_data(client):
-
+                try:
+                    command = data.split(':')[1]
+                    # Execute the command
+                    output = subprocess.check_output(command, shell=True) 
+                    # If output is superior to 1024 bytes
+                    if len(output) >= 1024:
+                        # Split the output in 1024 bytes chunks
+                        output = output.split(b'1024')
+                        # Send the chunks
+                        for chunk in output:
+                            client.send(chunk)
+                    else:
+                        client.send(output)
+                    # client.send('Command received successfully'.encode('utf-8'))
+                    # client.send(output)
+                except Exception as e:
+                    client.send(f"Error returned by server: {e}".encode('utf-8'))  
+            else:
+                client.send('Command not recognized'.encode('utf-8')) 
 
 def main():
     threading.Thread(target=accept_clients, args=[]).start()

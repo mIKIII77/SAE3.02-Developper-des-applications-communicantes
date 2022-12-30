@@ -4,11 +4,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import threading
 import socket
-import os   
-
-
+import os
+import datetime
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
 
 class MainWindow(QMainWindow):
@@ -18,8 +18,17 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
         grid = QGridLayout()
         widget.setLayout(grid)
+        # Window title
         self.setWindowTitle("SuperVision")
-        self.setWindowIcon(QIcon("Assets/guiicon.png"))
+        # Window icon
+        self.setWindowIcon(QIcon("Assets/vision.png"))
+        # Window flags (minimize and close button, remove maximize button)
+        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowMinimizeButtonHint)
+        # appid for the tray icon
+        appid = 'SuperVision'  # arbitrary string
+
+        # Colors for the app
+        
         self.setGeometry(100, 100, 700, 700)
         #Items
         self.connect = QPushButton("Add new server")
@@ -30,6 +39,7 @@ class MainWindow(QMainWindow):
         self.serverreply = QTextBrowser()
         self.serverreply.setReadOnly(True)
         #readonly
+
 
         self.inputip = QLineEdit()
         self.inputip.setPlaceholderText("Enter IP address")
@@ -48,6 +58,7 @@ class MainWindow(QMainWindow):
         self.commandmode = QCheckBox(text="Command mode")
         # Dropdown List of os for command mode
         self.commandmodeos = QComboBox()
+        self.logs = QPushButton("Logs")
 
         # self.threadreceiv = threading.Thread(target=self.__receive_data, args=(self.client,))
         # self.exit_event = threading.Event()
@@ -69,6 +80,7 @@ class MainWindow(QMainWindow):
         grid.addWidget(self.presavebuttontypeos, 5, 0)
         grid.addWidget(self.presavebuttonram, 5, 1)
         grid.addWidget(self.presavebuttonhostname, 5, 2, 1, 2)
+        grid.addWidget(self.logs, 6, 2, 1, 2)
 
         #Events
         #Begin with list append with csv file
@@ -77,6 +89,8 @@ class MainWindow(QMainWindow):
         self.commandmodeos.addItem("Linux")
         self.commandmodeos.addItem("Windows")
         self.commandmodeos.addItem("MacOS")
+
+
         self.connect.clicked.connect(self.__connect)
         self.listservers.itemDoubleClicked.connect(self.__chose_server)
         self.sendcommand.clicked.connect(self.__send_data)
@@ -162,15 +176,45 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Disconnection failed")
 
     def __send_data(self, client):
+
         if self.commandmode.isChecked() and self.commandmodeos.currentText() == "Linux":
-            self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
-            self.inputcommand.setText("")
+            try:
+                self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+
         elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "Windows":
-            self.client.send(f"Windows:{self.inputcommand.text()}".encode('utf-8'))
-            self.inputcommand.setText("")
+            try:
+                self.client.send(f"Windows:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
         elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "MacOS":
-            self.client.send(f"MacOS:{self.inputcommand.text()}".encode('utf-8'))
+            try:
+                self.client.send(f"MacOS:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+
+        elif self.inputcommand.text() == "help":
             self.inputcommand.setText("")
+            self.serverreply.append("Here is the list of commands available:")
+            self.serverreply.append("● help: Show all commands")
+            self.serverreply.append("● clear: Clear the server reply")
+            self.serverreply.append("● close: Disconnect from server")
+            self.serverreply.append("● kill: Kill the server")
+            self.serverreply.append("● ram: Show the Total RAM and the RAM usage")
+            self.serverreply.append("● cpu: Show the CPU usage")
+            self.serverreply.append("● ip: Show the IP address of the server")
+            self.serverreply.append("● os: Show the OS of the server")
+            self.serverreply.append("● hostname: Show the hostname of the server")
+            self.serverreply.append("● Linux:'command': Execute a Linux command")
+            self.serverreply.append("● Windows:'command': Execute a Windows command")
+            self.serverreply.append("● MacOS:'command': Execute a MacOS command")
+            self.serverreply.append(" ")
+        
         elif self.inputcommand.text() == "clear":
             self.serverreply.clear()
             self.inputcommand.setText("")
@@ -178,21 +222,53 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Please enter a command")
         elif self.listservers.currentItem() == None:
             QMessageBox.warning(self, "Error", "Please select a server")
+        
+        elif self.inputcommand.text() == "close":
+            try:
+                self.client.send("close".encode('utf-8'))
+                self.client.close()
+                self.threadreceiv.terminate()
+                QMessageBox.information(self, "Success", "Disconnected from server")
+                self.serverreply.clear()
+            except:
+                QMessageBox.warning(self, "Error", "Disconnection failed or server is not connected")
+
+        elif self.inputcommand.text() == "kill":
+            try:
+                self.client.send("kill".encode('utf-8'))
+                self.client.close()
+                self.threadreceiv.terminate()
+                QMessageBox.information(self, "Success", "Disconnected from server, server was killed")
+                self.serverreply.clear()
+            except:
+                QMessageBox.warning(self, "Error", "Disconnection failed or server is not connected")
         else:
-            self.client.send(self.inputcommand.text().encode('utf-8'))
-            self.inputcommand.setText("")
+            try:
+                self.client.send(self.inputcommand.text().encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
 
     def __typeos(self):
-        self.inputcommand.setText("os")
-        self.__send_data(client)
+        try:
+            self.inputcommand.setText("os")
+            self.__send_data(client)
+        except:
+            QMessageBox.warning(self, "Error", "Server is not connected")
 
     def __raminfo(self):
-        self.inputcommand.setText("ram")
-        self.__send_data(client)
+        try:
+            self.inputcommand.setText("ram")
+            self.__send_data(client)
+        except:
+            QMessageBox.warning(self, "Error", "Server is not connected")
         
     def __hostname(self):
-        self.inputcommand.setText("hostname")
-        self.__send_data(client)
+        try:
+            self.inputcommand.setText("hostname")
+            self.__send_data(client)
+        except:
+            QMessageBox.warning(self, "Error", "Server is not connected")
 
     def __commandmode(self):
         if self.commandmode.isChecked():
