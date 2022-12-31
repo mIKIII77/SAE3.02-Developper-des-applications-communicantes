@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.commandmodeos.addItem("Windows")
         self.commandmodeos.addItem("MacOS")
 
-
+    
         self.connect.clicked.connect(self.__connect)
         self.listservers.itemDoubleClicked.connect(self.__chose_server)
         self.sendcommand.clicked.connect(self.__send_data)
@@ -104,6 +104,8 @@ class MainWindow(QMainWindow):
         self.commandmode.stateChanged.connect(self.__commandmode)
         #When close window
         self.closeEvent = self.__closeEvent
+        # Show logs 
+        self.logs.clicked.connect(self.__show_logs)
 
 
         #Functions
@@ -119,8 +121,12 @@ class MainWindow(QMainWindow):
             servercsv.close()
             self.inputip.setText("")
             self.inputport.setText("")
-        #Add client to csv file 
-        
+            #Add client to csv file 
+ 
+    def __show_logs(self):
+        #Show directory with logs
+        os.startfile("Logs")
+
     def __appendlist_server(self, client):
         servercsv = open("ServersList/servers.csv", "r")
         for line in servercsv:
@@ -305,21 +311,22 @@ class ThreadReceive(QThread):
                 data = self.client.recv(1024)
                 self.serverreply.append(f"Client> {data.decode('utf-8')}")
                 # Refresh the QPlainTextEdit
+                hostname = socket.gethostname()
+                now = datetime.datetime.now()
+                current_time = now.strftime("%H:%M:%S")
                 self.serverreply.verticalScrollBar().setValue(self.serverreply.verticalScrollBar().maximum())
                 self.serverreply.update()
                 # Create a log file for each client
                 # Write the data received from the client to the log file
-                if os.path.exists(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log") == False:
-                    log = open(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log", "w")
-                    log.write(f"Begin log for {self.client.getpeername()[0]}:{self.client.getpeername()[1]}")
+                if os.path.exists(f"Logs/{hostname}-{self.client.getpeername()[0]}.log") == False:
+                    log = open(f"Logs/{hostname}-{self.client.getpeername()[0]}.log", "x")
+                    log.write(f"Begin log for {hostname}-{self.client.getpeername()[0]}.log")
                     log.write(f"\n--------------------------------------")
-                    now = datetime.datetime.now()
-                    current_time = now.strftime("%H:%M:%S")
-                    log.write(f"\n{current_time}Client> {data.decode('utf-8')}")
+                    log.write(f"\n{current_time}---Client> {data.decode('utf-8')}")
                     log.close()
                 else:
-                    log = open(f"Logs/{self.client.getpeername()[0]}:{self.client.getpeername()[1]}.log", "a")
-                    log.write(f"\n Client> {data.decode('utf-8')}")
+                    log = open(f"Logs/{hostname}-{self.client.getpeername()[0]}.log", "a")
+                    log.write(f"\n{current_time}---Client> {data.decode('utf-8')}")
                     log.close()
             except:
                 pass
@@ -334,7 +341,6 @@ def main():
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
-    # Event 
     
 if __name__ == '__main__':
     main()

