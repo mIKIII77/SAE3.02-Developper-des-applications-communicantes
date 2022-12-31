@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         #Items
         self.connect = QPushButton("Add new server")
         self.listservers = QListWidget()
-        self.text = QLabel("Les serveurs enrégistrés :")
+        self.text = QLabel("List of servers :")
         
         # Readonly QPlainTextEdit for the logs
         self.serverreply = QTextBrowser()
