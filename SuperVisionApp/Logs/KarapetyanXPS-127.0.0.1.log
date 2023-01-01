@@ -5,3 +5,95 @@ Begin log for KarapetyanXPS-127.0.0.1.log
 14:28:57---Client> RAM T: 31 GB, RAM U: 2 GB, RAM F: 26 GB
 15:18:32---Client> Welcome to the server! You are connected to Linux machine.
 15:20:39---Client> Welcome to the server! You are connected to Linux machine.
+22:36:33---Client> Welcome to the server! You are connected to Linux machine.
+22:39:00---Client> OS: Linux
+22:39:09---Client> OS: Linux
+22:39:12---Client> OS: Linux
+22:47:31---Client> Server.py
+
+22:51:16---Client> GNU bash, version 5.1.16(1)-release (x86_64-pc-linux-gnu)
+These shell commands are defined internally.  Type `help' to see this list.
+Type `help name' to find out more about the function `name'.
+Use `info bash' to find out more about the shell in general.
+Use `man -k' or `info' to find out more about commands not in this list.
+
+A star (*) next to a name means that the command is disabled.
+
+ job_spec [&]                                 history [-c] [-d offset] [n] or history ->
+ (( expression ))                             if COMMANDS; then COMMANDS; [ elif COMMAN>
+ . filename [arguments]                       jobs [-lnprs] [jobspec ...] or jobs -x co>
+ :                                            kill [-s sigspec | -n signum | -sigspec] >
+ [ arg... ]                                   let arg [arg ...]
+ [[ expression ]]                             local [option] name[=value] ...
+ alias [-p] [name[=value] ... ]               logout [n]
+ bg [job_spec ...]                            mapfile [-d delim] [-n count] 
+22:51:16---Client> [-O origin]>
+ bind [-lpsvPSVX] [-m keymap] [-f filename]>  popd [-n] [+N | -N]
+ break [n]                                    printf [-v var] format [arguments]
+ builtin [shell-builtin [arg ...]]            pushd [-n] [+N | -N | dir]
+ caller [expr]                                pwd [-LP]
+ case WORD in [PATTERN [| PATTERN]...) COMM>  read [-ers] [-a array] [-d delim] [-i tex>
+ cd [-L|[-P [-e]] [-@]] [dir]                 readarray [-d delim] [-n count] [-O origi>
+ command [-pVv] command [arg ...]             readonly [-aAf] [name[=value] ...] or rea>
+ compgen [-abcdefgjksuv] [-o option] [-A ac>  return [n]
+ complete [-abcdefgjksuv] [-pr] [-DEI] [-o >  select NAME [in WORDS ... ;] do COMMANDS;>
+ compopt [-o|+o option] [-DEI] [name ...]     set [-abefhkmnptuvxBCHP] [-o option-name]>
+ continue [n]                                 shift [n]
+ coproc [NAME] command [redirections]         shopt [-pqsu] [-o] [optname ...]
+ declare [-aAfFgiIlnrtux] [-p] [name[=value>  source filename [arguments]
+ dirs [-clpv] [+N] [-N] 
+22:51:16---Client>                       suspend [-f]
+ disown [-h] [-ar] [jobspec ... | pid ...]    test [expr]
+ echo [-neE] [arg ...]                        time [-p] pipeline
+ enable [-a] [-dnps] [-f filename] [name ..>  times
+ eval [arg ...]                               trap [-lp] [[arg] signal_spec ...]
+ exec [-cl] [-a name] [command [argument ..>  true
+ exit [n]                                     type [-afptP] name [name ...]
+ export [-fn] [name[=value] ...] or export >  typeset [-aAfFgiIlnrtux] [-p] name[=value>
+ false                                        ulimit [-SHabcdefiklmnpqrstuvxPT] [limit]
+ fc [-e ename] [-lnr] [first] [last] or fc >  umask [-p] [-S] [mode]
+ fg [job_spec]                                unalias [-a] name [name ...]
+ for NAME [in WORDS ... ] ; do COMMANDS; do>  unset [-f] [-v] [-n] [name ...]
+ for (( exp1; exp2; exp3 )); do COMMANDS; d>  until COMMANDS; do COMMANDS; done
+ function name { COMMANDS ; } or name () { >  variables - Names and meanings of some sh>
+ getopts optstring name [arg ...]     
+22:51:16---Client>         wait [-fn] [-p var] [id ...]
+ hash [-lr] [-p pathname] [-dt] [name ...]    while COMMANDS; do COMMANDS; done
+ help [-dms] [pattern ...]                    { COMMANDS ; }
+
+22:51:18---Client> [H[2J[3J
+22:57:52---Client> OS: Linux
+22:57:56---Client> Command not recognized
+22:58:04---Client> Server.py
+
+22:58:06---Client> Command executed successfully
+22:58:07---Client> Server.py
+
+22:58:08---Client> Server.py
+
+22:58:10---Client> Server.py
+
+22:58:11---Client> Server.py
+
+22:58:12---Client> Server.py
+
+22:58:12---Client> Server.py
+
+22:58:23---Client> Command executed successfully
+22:58:25---Client> Server.py
+
+22:58:26---Client> Server.py
+
+22:58:27---Client> [H[2J[3J
+22:58:32---Client> Server.py
+
+22:58:34---Client> Server.py
+
+22:58:43---Client> Command executed successfully
+22:58:45---Client> Server.py
+
+22:58:46---Client> [H[2J[3J
+22:58:51---Client> Command not recognized
+22:59:09---Client> Command not recognized
+22:59:14---Client> Server.py
+test.txt
