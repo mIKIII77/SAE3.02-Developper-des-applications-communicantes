@@ -13,7 +13,7 @@ Here are the packages that must be installed on your computer before using my re
 <b> To launch the virtual environment you have to follow these steps:</b>
 <li>Download the repository</li>
 <li>Open the terminal in the repository folder</li>
-<li>Type the following command: "source VirtualEnvironment/bin/activate" (without the quotes) if you are on Linux/MacOS or "VirtualEnvironment\Scripts\activate" if you are on Windows</li>
+<li>Type the following command: "source VirtualEnvironment/bin/activate" (without the quotes)</li>
 <b>And that's it, you can now launch the program!</b> (For information to leave the virtual environment you have to type the following command: "deactivate" (without the quotes))
 </details>
 <p></p>
