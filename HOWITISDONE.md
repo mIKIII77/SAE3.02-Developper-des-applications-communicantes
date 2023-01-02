@@ -55,3 +55,121 @@ To disconnect from the server, we use the function "__disconnect" of the socket.
 The reconnection works the same way as the connection. This action will use the same function "__chose_server". That's why at the beginning of the function "__chose_server" we disconnect the client if it is already connected to a other server and stop the thread before connecting to the new server.
 
 
+
+## Send a message/command to the server / Receive a return from the server
+
+### Send a message/command to the server
+
+## Send a message/command to the server 
+
+To send a message/command to the server, we use the function "__send_data".  This function will return an error message if the client don't choose a server in the list of servers. If the client choose a server in the list of servers, the function will try to send the message/command to the server. If the message/command is "clear", the function will clear the "server reply" QWidget. If the message/command is "close", the function will disconnect from the server. If the message/command is "kill", the function will disconnect from the server and also kill the server. This function also check if the command mode is checked and if the OS is selected. If the command mode is checked and the OS is selected, the function will send the message/command to the server with the OS selected prefix. If the command mode is not checked, the function will send the message/command to the server without the OS selected. If the message/command is not "clear", "close" or "kill", the function will return an error message. If the message/command is not sent to the server, the function will return an error message.
+
+```python
+    def __send_data(self, client):
+
+        if self.commandmode.isChecked() and self.commandmodeos.currentText() == "Linux":
+            try:
+                self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "Windows":
+            try:
+                self.client.send(f"Windows:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "MacOS":
+            try:
+                self.client.send(f"MacOS:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
+        elif self.inputcommand.text() == "clear":
+            self.serverreply.clear()
+            self.inputcommand.setText("")
+        elif self.inputcommand.text() == "":
+            QMessageBox.warning(self, "Error", "Please enter a command")
+        elif self.listservers.currentItem() == None:
+            QMessageBox.warning(self, "Error", "Please select a server")
+        
+        elif self.inputcommand.text() == "close":
+            try:
+                self.client.send("close".encode('utf-8'))
+                self.client.close()
+                self.threadreceiv.terminate()
+                QMessageBox.information(self, "Success", "Disconnected from server")
+                self.serverreply.clear()
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
+        elif self.inputcommand.text() == "kill":
+            try:
+                self.client.send("kill".encode('utf-8'))
+                self.client.close()
+
+
+
+We also use the function "setText" of the QLineEdit to clear the input command line.
+
+```python
+    def __send_data(self, client):
+
+        if self.commandmode.isChecked() and self.commandmodeos.currentText() == "Linux":
+            try:
+                self.client.send(f"Linux:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "Windows":
+            try:
+                self.client.send(f"Windows:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
+        elif self.commandmode.isChecked() and self.commandmodeos.currentText() == "MacOS":
+            try:
+                self.client.send(f"MacOS:{self.inputcommand.text()}".encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+        
+        elif self.inputcommand.text() == "clear":
+            self.serverreply.clear()
+            self.inputcommand.setText("")
+        elif self.inputcommand.text() == "":
+            QMessageBox.warning(self, "Error", "Please enter a command")
+        elif self.listservers.currentItem() == None:
+            QMessageBox.warning(self, "Error", "Please select a server")
+        
+        elif self.inputcommand.text() == "close":
+            try:
+                self.client.send("close".encode('utf-8'))
+                self.client.close()
+                self.threadreceiv.terminate()
+                QMessageBox.information(self, "Success", "Disconnected from server")
+                self.serverreply.clear()
+            except:
+                QMessageBox.warning(self, "Error", "Disconnection failed or server is not connected")
+
+        elif self.inputcommand.text() == "kill":
+            try:
+                self.client.send("kill".encode('utf-8'))
+                self.client.close()
+                self.threadreceiv.terminate()
+                QMessageBox.information(self, "Success", "Disconnected from server, server was killed")
+                self.serverreply.clear()
+            except:
+                QMessageBox.warning(self, "Error", "Disconnection failed or server is not connected")
+        else:
+            try:
+                self.client.send(self.inputcommand.text().encode('utf-8'))
+                self.inputcommand.setText("")
+            except:
+                QMessageBox.warning(self, "Error", "Please connect to a server")
+```
