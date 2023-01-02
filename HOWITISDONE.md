@@ -60,10 +60,6 @@ The reconnection works the same way as the connection. This action will use the 
 
 ### Send a message/command to the server
 
-## Send a message/command to the server 
-
-To send a message/command to the server, we use the function "__send_data".  This function will return an error message if the client don't choose a server in the list of servers. If the client choose a server in the list of servers, the function will try to send the message/command to the server. If the message/command is "clear", the function will clear the "server reply" QWidget. If the message/command is "close", the function will disconnect from the server. If the message/command is "kill", the function will disconnect from the server and also kill the server. This function also check if the command mode is checked and if the OS is selected. If the command mode is checked and the OS is selected, the function will send the message/command to the server with the OS selected prefix. If the command mode is not checked, the function will send the message/command to the server without the OS selected. If the message/command is not "clear", "close" or "kill", the function will return an error message. If the message/command is not sent to the server, the function will return an error message.
-
 ```python
     def __send_data(self, client):
 
